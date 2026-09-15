@@ -1,6 +1,6 @@
 # Tiny Tapeout project information
 project:
-  title:        "ASIC Onboarding Project"      # Project title
+  title:        "ASIC Onboarding Project - Arshvir Ghotra"      # Project title
   author:       "Arshvir Ghotra"      # Your name
   discord:      "spicyair."      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
   description:  "SPI-controlled PWM peripheral for Tiny Tapeout"      # One line description of what your project does
