@@ -28,13 +28,9 @@ module spi_peripheral (
     reg spi_sync1;
     reg spi_sync2;
     reg spi_prev;
-    reg [15:0] spi_data;
 
     wire nCS_posedge = nCS_sync2 && !nCS_prev;
     wire spi_data_happy = spi_sync2 ^ spi_prev;
-    wire spi_rw = spi_data[15];
-    wire [6:0] spi_address = spi_data[14:8];
-    wire [7:0] spi_val = spi_data[7:0];
 
     always @(posedge sclk or negedge rst_n) begin
         if (!rst_n) begin
@@ -79,9 +75,22 @@ module spi_peripheral (
     always @(posedge clk or negedge rst_n) begin
         if(!rst_n) begin
             nCS_ready <= 1'b0;
+            en_reg_out_7_0 <= 8'b0;
+            en_reg_out_15_8 <= 8'b0;
+            en_reg_pwm_7_0 <= 8'b0;
+            en_reg_pwm_15_8 <= 8'b0;
+            pwm_duty_cycle <= 8'b0;
         end else if (nCS_sync2 == 1'b0) begin   
             if(spi_data_happy == 1'b1) begin
-                spi_data <= spi_shift;
+                if(spi_shift[15] == 1'b1) begin
+                    case(spi_shift[14:8]) 
+                        7'h00: en_reg_out_7_0 <= spi_shift[7:0];
+                        7'h01: en_reg_out_15_8 <= spi_shift[7:0];
+                        7'h02: en_reg_pwm_7_0 <= spi_shift[7:0];
+                        7'h03: en_reg_pwm_15_8 <= spi_shift[7:0];
+                        7'h04: pwm_duty_cycle <= spi_shift[7:0];
+                    endcase
+                end
             end
         end else begin
             if(nCS_posedge) begin
