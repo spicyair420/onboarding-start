@@ -25,7 +25,7 @@ project:
 pinout:
   # Inputs
   ui[0]: "SCLK"
-  ui[1]: "C0PI"
+  ui[1]: "COPI"
   ui[2]: "nCS"
   ui[3]: ""
   ui[4]: ""
