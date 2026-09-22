@@ -84,27 +84,43 @@ async def send_spi_transaction(dut, r_w, address, data):
     return ui_in_logicarray(ncs, bit, sclk)
 
 async def wait_for_RisingEdge_uo_out_0(dut):
-    prev_val = int(dut.uo_out.value[0])
+    prev_val = int(dut.uo_out.value) & 0x01
+
     for _ in range(10000):
         await RisingEdge(dut.clk)
         await ReadOnly()
-        curr_val = int(dut.uo_out.value[0])
+
+        curr_val = int(dut.uo_out.value) & 0x01
+
         if prev_val == 0 and curr_val == 1:
             return
+
         prev_val = curr_val
-    raise AssertionError("Timed out waiting for rising edge on uo_out[0]")
+
+    raise AssertionError(
+        f"Timed out waiting for rising edge on uo_out[0]. "
+        f"Final uo_out={dut.uo_out.value}"
+    )
 
 
 async def wait_for_FallingEdge_uo_out_0(dut):
-    prev_val = int(dut.uo_out.value[0])
+    prev_val = int(dut.uo_out.value) & 0x01
+
     for _ in range(10000):
         await RisingEdge(dut.clk)
         await ReadOnly()
-        curr_val = int(dut.uo_out.value[0])
+
+        curr_val = int(dut.uo_out.value) & 0x01
+
         if prev_val == 1 and curr_val == 0:
             return
+
         prev_val = curr_val
-    raise AssertionError("Timed out waiting for falling edge on uo_out[0]")
+
+    raise AssertionError(
+        f"Timed out waiting for falling edge on uo_out[0]. "
+        f"Final uo_out={dut.uo_out.value}"
+    )
 
 @cocotb.test()
 async def test_spi(dut):
