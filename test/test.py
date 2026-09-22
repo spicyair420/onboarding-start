@@ -249,15 +249,6 @@ async def test_pwm_duty(dut):
 
     ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x80)
 
-    for i in range(100):
-        await RisingEdge(dut.clk)
-
-        dut._log.info(
-            f"counter={dut.user_project.pwm_peripheral_inst.pwm_counter.value}, "
-            f"signal={dut.user_project.pwm_peripheral_inst.pwm_signal.value}, "
-            f"out={dut.uo_out.value}"
-        )
-
     await wait_for_RisingEdge_uo_out_0(dut)
     edge1 = cocotb.utils.get_sim_time(units="ns")
     await wait_for_RisingEdge_uo_out_0(dut)
@@ -276,6 +267,10 @@ async def test_pwm_duty(dut):
     assert 49 <= dutybooty <= 51
 
     ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0xFF)
+
+    dut._log.info(
+        f"duty register = {dut.user_project.pwm_peripheral_inst.pwm_duty_cycle.value}"
+    )
 
     await ClockCycles(dut.clk, 4000)
     assert dut.uo_out.value[0] == 1
