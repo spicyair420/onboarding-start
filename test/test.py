@@ -272,7 +272,7 @@ async def test_pwm_duty(dut):
         f"duty register = {dut.user_project.pwm_peripheral_inst.pwm_duty_cycle.value}"
     )
 
-    await ClockCycles(dut.clk, 4000)
+    # await ClockCycles(dut.clk, 4000)
 
     dut._log.info(
         f"duty={dut.user_project.pwm_peripheral_inst.pwm_duty_cycle.value}, "
