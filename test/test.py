@@ -166,6 +166,21 @@ async def test_pwm_freq(dut):
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
 
+    ui_in_val = await send_spi_transaction(dut, 1, 0x00, 0x01)
+    ui_in_val = await send_spi_transaction(dut, 1, 0x02, 0x01)
+    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x80)
+    
+    await RisingEdge(dut.uo_out[0])
+    edge1 = cocotb.utils.get_sim_time(units="ns")
+    await RisingEdge(dut.uo_out[0])
+    edge2 = cocotb.utils.get_sim_time(units="ns")
+    period = edge2 - edge1
+    frequency = 1 / (period * (10 ** -9))
+
+
+    dut._log.info(f"Frequency: {frequency} Hz") 
+    assert 2970 <= frequency <= 3030
+
     dut._log.info("PWM Frequency test completed successfully")
 
 
@@ -185,10 +200,8 @@ async def test_pwm_duty(dut):
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
 
-    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
     ui_in_val = await send_spi_transaction(dut, 1, 0x00, 0x01)
     ui_in_val = await send_spi_transaction(dut, 1, 0x02, 0x01)
-
     ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x00)
 
     await ClockCycles(dut.clk, 4000)
