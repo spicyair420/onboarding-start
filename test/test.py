@@ -4,6 +4,7 @@
 import cocotb
 from cocotb.clock import Clock
 from cocotb.triggers import RisingEdge
+from cocotb.triggers import FallingEdge
 from cocotb.triggers import ClockCycles
 from cocotb.types import Logic
 from cocotb.types import LogicArray
@@ -151,11 +152,74 @@ async def test_spi(dut):
 
 @cocotb.test()
 async def test_pwm_freq(dut):
-    # Write your test here
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
+
+    dut._log.info("Reset")
+    dut.ena.value = 1
+    ncs = 1
+    bit = 0
+    sclk = 0
+    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
+
     dut._log.info("PWM Frequency test completed successfully")
 
 
 @cocotb.test()
 async def test_pwm_duty(dut):
-    # Write your test here
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
+
+    dut._log.info("Reset")
+    dut.ena.value = 1
+    ncs = 1
+    bit = 0
+    sclk = 0
+    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
+    dut.rst_n.value = 0
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 5)
+
+    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
+    ui_in_val = await send_spi_transaction(dut, 1, 0x00, 0x01)
+    ui_in_val = await send_spi_transaction(dut, 1, 0x02, 0x01)
+
+    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x00)
+
+    await ClockCycles(dut.clk, 4000)
+    assert dut.uo_out.value[0] == 0
+    
+    dut._log.info(f"PWM dooty booty: 0%")
+
+    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x80)
+
+    await RisingEdge(dut.uo_out[0])
+    edge1 = cocotb.utils.get_sim_time(units="ns")
+    await RisingEdge(dut.uo_out[0])
+    edge2 = cocotb.utils.get_sim_time(units="ns")
+    period = edge2 - edge1
+
+    await RisingEdge(dut.uo_out[0])
+    time1 = cocotb.utils.get_sim_time(units="ns")
+    await FallingEdge(dut.uo_out[0])
+    time2 = cocotb.utils.get_sim_time(units="ns")
+    high_time = time2 - time1
+
+    dutybooty = (high_time / period) * 100
+
+    dut._log.info(f"PWM dooty booty: {dutybooty}%")
+    assert 49 <= dutybooty <= 51
+
+    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0xFF)
+
+    await ClockCycles(dut.clk, 4000)
+    assert dut.uo_out.value[0] == 1
+
+    dut._log.info(f"PWM dooty booty: 100%")
+
     dut._log.info("PWM Duty Cycle test completed successfully")
