@@ -88,7 +88,7 @@ async def wait_for_RisingEdge_uo_out_0(dut):
 
     for _ in range(10000):
         await RisingEdge(dut.clk)
-        await ReadOnly()
+        # await ReadOnly()
 
         curr_val = int(dut.uo_out.value) & 0x01
 
@@ -108,7 +108,7 @@ async def wait_for_FallingEdge_uo_out_0(dut):
 
     for _ in range(10000):
         await RisingEdge(dut.clk)
-        await ReadOnly()
+        # await ReadOnly()
 
         curr_val = int(dut.uo_out.value) & 0x01
 
