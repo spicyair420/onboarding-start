@@ -182,15 +182,14 @@ async def test_pwm_freq(dut):
     ncs = 1
     bit = 0
     sclk = 0
-    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
     dut.rst_n.value = 0
     await ClockCycles(dut.clk, 5)
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
 
-    ui_in_val = await send_spi_transaction(dut, 1, 0x00, 0x01)
-    ui_in_val = await send_spi_transaction(dut, 1, 0x02, 0x01)
-    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x80)
+    await send_spi_transaction(dut, 1, 0x00, 0x01)
+    await send_spi_transaction(dut, 1, 0x02, 0x01)
+    await send_spi_transaction(dut, 1, 0x04, 0x80)
     
     await wait_for_RisingEdge_uo_out_0(dut)
     edge1 = cocotb.utils.get_sim_time(units="ns")
@@ -216,22 +215,21 @@ async def test_pwm_duty(dut):
     ncs = 1
     bit = 0
     sclk = 0
-    dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
     dut.rst_n.value = 0
     await ClockCycles(dut.clk, 5)
     dut.rst_n.value = 1
     await ClockCycles(dut.clk, 5)
 
-    ui_in_val = await send_spi_transaction(dut, 1, 0x00, 0x01)
-    ui_in_val = await send_spi_transaction(dut, 1, 0x02, 0x01)
-    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x00)
+    await send_spi_transaction(dut, 1, 0x00, 0x01)
+    await send_spi_transaction(dut, 1, 0x02, 0x01)
+    await send_spi_transaction(dut, 1, 0x04, 0x00)
 
     await ClockCycles(dut.clk, 4000)
     assert dut.uo_out.value[0] == 0
     
     dut._log.info(f"PWM dooty booty: 0%")
 
-    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x80)
+    await send_spi_transaction(dut, 1, 0x04, 0x80)
 
     await wait_for_RisingEdge_uo_out_0(dut)
     edge1 = cocotb.utils.get_sim_time(units="ns")
@@ -250,7 +248,7 @@ async def test_pwm_duty(dut):
     dut._log.info(f"PWM dooty booty: {dutybooty}%")
     assert 49 <= dutybooty <= 51
 
-    ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0xFF)
+    await send_spi_transaction(dut, 1, 0x04, 0xFF)
 
     await ClockCycles(dut.clk, 4000)
 
