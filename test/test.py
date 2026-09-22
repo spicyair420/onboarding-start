@@ -3,8 +3,7 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge
-from cocotb.triggers import FallingEdge
+from cocotb.triggers import RisingEdge, FallingEdge, ValueChange
 from cocotb.triggers import ClockCycles
 from cocotb.types import Logic
 from cocotb.types import LogicArray
@@ -83,6 +82,22 @@ async def send_spi_transaction(dut, r_w, address, data):
     dut.ui_in.value = ui_in_logicarray(ncs, bit, sclk)
     await ClockCycles(dut.clk, 600)
     return ui_in_logicarray(ncs, bit, sclk)
+
+async def wait_for_RisingEdge_uo_out_0(dut):
+    while True:
+        prev_val = dut.uo_out.value[0]
+        await ValueChange(dut.uo_out)
+        curr_val = dut.uo_out.value[0]
+        if prev_val == 0 and curr_val == 1:
+            break
+
+async def wait_for_FallingEdge_uo_out_0(dut):
+    while True:
+        prev_val = dut.uo_out.value[0]
+        await ValueChange(dut.uo_out)
+        curr_val = dut.uo_out.value[0]
+        if prev_val == 1 and curr_val == 0:
+            break
 
 @cocotb.test()
 async def test_spi(dut):
@@ -170,9 +185,9 @@ async def test_pwm_freq(dut):
     ui_in_val = await send_spi_transaction(dut, 1, 0x02, 0x01)
     ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x80)
     
-    await RisingEdge(dut.uo_out[0])
+    await wait_for_RisingEdge_uo_out_0(dut)
     edge1 = cocotb.utils.get_sim_time(units="ns")
-    await RisingEdge(dut.uo_out[0])
+    await wait_for_RisingEdge_uo_out_0(dut)
     edge2 = cocotb.utils.get_sim_time(units="ns")
     period = edge2 - edge1
     frequency = 1 / (period * (10 ** -9))
@@ -211,15 +226,15 @@ async def test_pwm_duty(dut):
 
     ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x80)
 
-    await RisingEdge(dut.uo_out[0])
+    await wait_for_RisingEdge_uo_out_0(dut)
     edge1 = cocotb.utils.get_sim_time(units="ns")
-    await RisingEdge(dut.uo_out[0])
+    await wait_for_RisingEdge_uo_out_0(dut)
     edge2 = cocotb.utils.get_sim_time(units="ns")
     period = edge2 - edge1
 
-    await RisingEdge(dut.uo_out[0])
+    await wait_for_RisingEdge_uo_out_0(dut)
     time1 = cocotb.utils.get_sim_time(units="ns")
-    await FallingEdge(dut.uo_out[0])
+    await wait_for_FallingEdge_uo_out_0(dut)
     time2 = cocotb.utils.get_sim_time(units="ns")
     high_time = time2 - time1
 
