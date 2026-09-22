@@ -22,6 +22,13 @@ module spi_peripheral (
     reg nCS_sync2;
     reg nCS_prev;
 
+    reg sclk_sync1;
+    reg sclk_sync2;
+    reg sclk_prev;
+
+    reg copi_sync1;
+    reg copi_sync2;
+
     reg [15:0] spi_shift;
     reg [3:0] spi_count;
     reg spi_ready;
@@ -31,19 +38,22 @@ module spi_peripheral (
 
     wire nCS_posedge = nCS_sync2 && !nCS_prev;
     wire spi_data_happy = spi_sync2 ^ spi_prev;
+    wire sclk_posedge = sclk_sync2 && ! sclk_prev;
 
-    always @(posedge sclk or negedge rst_n) begin
+    always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             spi_shift <= 16'b0;
             spi_count <= 4'b0;
             spi_ready <= 1'b0;
-        end else if(!ncs) begin
-            spi_shift <= {spi_shift[14:0], copi};
-            if(spi_count == 4'd15) begin
-                spi_count <= 4'b0;
-                spi_ready <= ~spi_ready;
-            end else begin
-                spi_count <= spi_count + 1'b1;
+        end else if(!nCS_sync2) begin
+            if(sclk_posedge) begin
+                spi_shift <= {spi_shift[14:0], copi_sync2};
+                if(spi_count == 4'd15) begin
+                    spi_count <= 4'b0;
+                    spi_ready <= ~spi_ready;
+                end else begin
+                    spi_count <= spi_count + 1'b1;
+                end
             end
         end 
     end
@@ -57,6 +67,29 @@ module spi_peripheral (
             nCS_sync1 <= ncs;
             nCS_sync2 <= nCS_sync1;
             nCS_prev <= nCS_sync2;
+        end
+    end
+
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin
+            sclk_sync1 <= 1'b0;
+            sclk_sync2 <= 1'b0;
+            sclk_prev <= 1'b0;
+        end else begin
+            sclk_sync1 <= sclk;
+            sclk_sync2 <= sclk_sync1;
+            sclk_prev <= sclk_sync2;
+
+        end
+    end
+
+    always @(posedge clk or negedge rst_n) begin
+        if(!rst_n) begin
+            copi_sync1 <= 1'b0;
+            copi_sync2 <= 1'b0;
+        end else begin
+            copi_sync1 <= copi;
+            copi_sync2 <= copi_sync1;
         end
     end
 
@@ -89,6 +122,7 @@ module spi_peripheral (
                         7'h02: en_reg_pwm_7_0 <= spi_shift[7:0];
                         7'h03: en_reg_pwm_15_8 <= spi_shift[7:0];
                         7'h04: pwm_duty_cycle <= spi_shift[7:0];
+                        default: begin end
                     endcase
                 end
             end
