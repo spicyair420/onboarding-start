@@ -3,7 +3,7 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, FallingEdge, ValueChange
+from cocotb.triggers import RisingEdge, FallingEdge
 from cocotb.triggers import ClockCycles
 from cocotb.types import Logic
 from cocotb.types import LogicArray
@@ -84,20 +84,23 @@ async def send_spi_transaction(dut, r_w, address, data):
     return ui_in_logicarray(ncs, bit, sclk)
 
 async def wait_for_RisingEdge_uo_out_0(dut):
+    prev_val = int(dut.uo_out.value[0])
     while True:
-        prev_val = dut.uo_out.value[0]
-        await ValueChange(dut.uo_out)
-        curr_val = dut.uo_out.value[0]
+        await RisingEdge(dut.clk)
+        curr_val = int(dut.uo_out.value[0])
         if prev_val == 0 and curr_val == 1:
             break
+        prev_val = curr_val
+
 
 async def wait_for_FallingEdge_uo_out_0(dut):
+    prev_val = int(dut.uo_out.value[0])
     while True:
-        prev_val = dut.uo_out.value[0]
-        await ValueChange(dut.uo_out)
-        curr_val = dut.uo_out.value[0]
+        await RisingEdge(dut.clk)
+        curr_val = int(dut.uo_out.value[0])
         if prev_val == 1 and curr_val == 0:
             break
+        prev_val = curr_val
 
 @cocotb.test()
 async def test_spi(dut):
