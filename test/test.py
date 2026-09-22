@@ -231,10 +231,15 @@ async def test_pwm_duty(dut):
 
     ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0x80)
 
-    dut._log.info(f"uo_out = {dut.uo_out.value}")
-    dut._log.info(f"PWM duty = {dut.pwm_peripheral_inst.pwm_duty_cycle.value}")
-    dut._log.info(f"PWM enable = {dut.pwm_peripheral_inst.en_reg_pwm_7_0.value}")
-    dut._log.info(f"OUT register = {dut.pwm_peripheral_inst.en_reg_out_7_0.value}")
+    dut._log.info(
+        f"duty = {dut.user_project.pwm_peripheral_inst.pwm_duty_cycle.value}"
+    )
+    dut._log.info(
+        f"pwm_enable = {dut.user_project.pwm_peripheral_inst.en_reg_pwm_7_0.value}"
+    )
+    dut._log.info(
+        f"output_value = {dut.user_project.pwm_peripheral_inst.en_reg_out_7_0.value}"
+    )
 
     await wait_for_RisingEdge_uo_out_0(dut)
     edge1 = cocotb.utils.get_sim_time(units="ns")
