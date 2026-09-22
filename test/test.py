@@ -85,22 +85,24 @@ async def send_spi_transaction(dut, r_w, address, data):
 
 async def wait_for_RisingEdge_uo_out_0(dut):
     prev_val = int(dut.uo_out.value[0])
-    while True:
+    for _ in range(10000):
         await RisingEdge(dut.clk)
         curr_val = int(dut.uo_out.value[0])
         if prev_val == 0 and curr_val == 1:
-            break
+            return
         prev_val = curr_val
+    raise AssertionError("Timed out waiting for rising edge on uo_out[0]")
 
 
 async def wait_for_FallingEdge_uo_out_0(dut):
     prev_val = int(dut.uo_out.value[0])
-    while True:
+    for _ in range(10000):
         await RisingEdge(dut.clk)
         curr_val = int(dut.uo_out.value[0])
         if prev_val == 1 and curr_val == 0:
-            break
+            return
         prev_val = curr_val
+    raise AssertionError("Timed out waiting for falling edge on uo_out[0]")
 
 @cocotb.test()
 async def test_spi(dut):
@@ -170,6 +172,9 @@ async def test_spi(dut):
 
 @cocotb.test()
 async def test_pwm_freq(dut):
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
+
     dut._log.info("Reset")
     dut.ena.value = 1
     ncs = 1
@@ -201,6 +206,9 @@ async def test_pwm_freq(dut):
 
 @cocotb.test()
 async def test_pwm_duty(dut):
+    clock = Clock(dut.clk, 100, units="ns")
+    cocotb.start_soon(clock.start())
+
     dut._log.info("Reset")
     dut.ena.value = 1
     ncs = 1
