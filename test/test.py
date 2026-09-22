@@ -224,8 +224,10 @@ async def test_pwm_duty(dut):
     await send_spi_transaction(dut, 1, 0x02, 0x01)
     await send_spi_transaction(dut, 1, 0x04, 0x00)
 
-    await ClockCycles(dut.clk, 4000)
-    assert dut.uo_out.value[0] == 0
+    for i in range(4000):
+        await RisingEdge(dut.clk)
+        pwm_bit0 = int(dut.uo_out.value) & 0x01
+        assert pwm_bit0 == 0
     
     dut._log.info(f"PWM dooty booty: 0%")
 
@@ -250,10 +252,10 @@ async def test_pwm_duty(dut):
 
     await send_spi_transaction(dut, 1, 0x04, 0xFF)
 
-    await ClockCycles(dut.clk, 4000)
-
-    pwm_bit0 = int(dut.uo_out.value) & 0x01
-    assert pwm_bit0 == 1, f"Expected uo_out[0] to be 1 for 100% duty cycle, got {pwm_bit0}"
+    for i in range(4000):
+        await RisingEdge(dut.clk)
+        pwm_bit0 = int(dut.uo_out.value) & 0x01
+        assert pwm_bit0 == 1
 
     dut._log.info(f"PWM dooty booty: 100%")
 
