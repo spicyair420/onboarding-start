@@ -85,42 +85,26 @@ async def send_spi_transaction(dut, r_w, address, data):
 
 async def wait_for_RisingEdge_uo_out_0(dut):
     prev_val = int(dut.uo_out.value) & 0x01
-
     for _ in range(10000):
         await RisingEdge(dut.clk)
-        # await ReadOnly()
-
         curr_val = int(dut.uo_out.value) & 0x01
-
         if prev_val == 0 and curr_val == 1:
             return
-
         prev_val = curr_val
 
-    raise AssertionError(
-        f"Timed out waiting for rising edge on uo_out[0]. "
-        f"Final uo_out={dut.uo_out.value}"
-    )
+    raise AssertionError(f"Timed out waiting for rising edge on uo_out[0]. {dut.uo_out.value}")
 
 
 async def wait_for_FallingEdge_uo_out_0(dut):
     prev_val = int(dut.uo_out.value) & 0x01
-
     for _ in range(10000):
         await RisingEdge(dut.clk)
-        # await ReadOnly()
-
         curr_val = int(dut.uo_out.value) & 0x01
-
         if prev_val == 1 and curr_val == 0:
             return
-
         prev_val = curr_val
 
-    raise AssertionError(
-        f"Timed out waiting for falling edge on uo_out[0]. "
-        f"Final uo_out={dut.uo_out.value}"
-    )
+    raise AssertionError(f"Timed out waiting for falling edge on uo_out[0]. {dut.uo_out.value}")
 
 @cocotb.test()
 async def test_spi(dut):
@@ -268,20 +252,7 @@ async def test_pwm_duty(dut):
 
     ui_in_val = await send_spi_transaction(dut, 1, 0x04, 0xFF)
 
-    dut._log.info(
-        f"duty register = {dut.user_project.pwm_peripheral_inst.pwm_duty_cycle.value}"
-    )
-
     await ClockCycles(dut.clk, 4000)
-
-    dut._log.info(
-        f"duty={dut.user_project.pwm_peripheral_inst.pwm_duty_cycle.value}, "
-        f"counter={dut.user_project.pwm_peripheral_inst.pwm_counter.value}, "
-        f"signal={dut.user_project.pwm_peripheral_inst.pwm_signal.value}, "
-        f"uo_out={dut.uo_out.value}"
-    )
-
-    # assert dut.uo_out.value[0] == 1
 
     pwm_bit0 = int(dut.uo_out.value) & 0x01
     assert pwm_bit0 == 1, f"Expected uo_out[0] to be 1 for 100% duty cycle, got {pwm_bit0}"
