@@ -3,7 +3,7 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import RisingEdge, FallingEdge
+from cocotb.triggers import RisingEdge, FallingEdge,  ClockCycles, ReadOnly
 from cocotb.triggers import ClockCycles
 from cocotb.types import Logic
 from cocotb.types import LogicArray
@@ -87,6 +87,7 @@ async def wait_for_RisingEdge_uo_out_0(dut):
     prev_val = int(dut.uo_out.value[0])
     for _ in range(10000):
         await RisingEdge(dut.clk)
+        await ReadOnly()
         curr_val = int(dut.uo_out.value[0])
         if prev_val == 0 and curr_val == 1:
             return
@@ -98,6 +99,7 @@ async def wait_for_FallingEdge_uo_out_0(dut):
     prev_val = int(dut.uo_out.value[0])
     for _ in range(10000):
         await RisingEdge(dut.clk)
+        await ReadOnly()
         curr_val = int(dut.uo_out.value[0])
         if prev_val == 1 and curr_val == 0:
             return
