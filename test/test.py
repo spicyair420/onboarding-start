@@ -272,7 +272,7 @@ async def test_pwm_duty(dut):
         f"duty register = {dut.user_project.pwm_peripheral_inst.pwm_duty_cycle.value}"
     )
 
-    # await ClockCycles(dut.clk, 4000)
+    await ClockCycles(dut.clk, 4000)
 
     dut._log.info(
         f"duty={dut.user_project.pwm_peripheral_inst.pwm_duty_cycle.value}, "
@@ -281,7 +281,10 @@ async def test_pwm_duty(dut):
         f"uo_out={dut.uo_out.value}"
     )
 
-    assert dut.uo_out.value[0] == 1
+    # assert dut.uo_out.value[0] == 1
+
+    pwm_bit0 = int(dut.uo_out.value) & 0x01
+    assert pwm_bit0 == 1, f"Expected uo_out[0] to be 1 for 100% duty cycle, got {pwm_bit0}"
 
     dut._log.info(f"PWM dooty booty: 100%")
 
